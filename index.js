@@ -1,49 +1,29 @@
-var http = require("http");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const express = require("express");
+const app = express();
 
-const handleError = (err, res) => {
-  if (err) {
-    console.error("Server Error:", err);
-    res.writeHead(500, { "Content-type": "text/html" });
-    res.end("internal server error");
-    return true;
-  }
-  return false;
-};
+app.get("/", (req, res) => {
+  const filePath = path.join(__dirname, "index.html");
 
-http
-  .createServer((req, res) => {
-    // hard way of reading a file and going to it
-    if (req.url === "/" || req.url === "/home") {
-      fs.readFile(path.join(__dirname, "./index.html"), (err, data) => {
-        if (handleError(err, res)) return;
+  // Now we can send the file
+  res.sendFile(filePath);
+});
 
-        res.writeHead(200, { "Content-type": "text/html" });
-        res.end(data);
-      });
-    } else if (req.url === "/about") {
-      fs.readFile(path.join(__dirname, "./about.html"), (err, data) => {
-        if (handleError(err, res)) return;
+app.get("/about", (req, res) =>
+  res.sendFile(path.join(__dirname, "about.html"))
+);
 
-        res.writeHead(200, { "Content-type": "text/html" });
-        res.end(data);
-      });
-    } else if (req.url === "/contact-me") {
-      fs.readFile(path.join(__dirname, "./contact-me.html"), (err, data) => {
-        if (handleError(err, res)) return;
+app.get("/contact-me", (req, res) =>
+  res.sendFile(path.join(__dirname, "contact-me.html"))
+);
 
-        res.writeHead(200, { "Content-type": "text/html" });
-        res.end(data);
-      });
-    } else {
-      fs.readFile(path.join(__dirname, "./404.html"), (err, data) => {
-        res.writeHead(404, { "Content-type": "text/html" });
-        res.end(data);
-      });
-    }
-  })
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, "404.html"));
+});
 
-  .listen(8080, () => {
-    console.log("Server launched, running at port 8080");
-  });
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log("Rewrite info site using express now, listening to port", PORT);
+});
